@@ -1,10 +1,13 @@
-import random
+import random, board_rooms
 
+CHAR_ICON = "[ P ]"
 class Character():
     def __init__(self, name) -> None:
         self.name = name
-        self.icon = "[ P ]"
-        self.location = [0][0]
+        self.icon = CHAR_ICON
+        self.location_x = 0
+        self.location_y = 0
+        self.inCombat = False
         self.max_health = random_stat(10, 20)
         self.health = self.max_health
         self.max_stamina = random_stat(10, 20)
@@ -31,19 +34,46 @@ class Character():
     def roll(self) -> int:
         return random.randint(1, 20)
     
-    def attack(self) -> int:
-        return self.strength
+    def attack(self, target) -> str:
+        d = self.roll()
+        if d >= target.armor_class:
+            target.take_damage(self.strength)
+            if target.health < 0:
+                self.inCombat = False
+            return f"{self.name} hit {target.name} for {self.strength}"
+        else:
+            return f"{self.name} missed!"
+
+    def take_damage(self, amount) -> int:
+        self.health -= amount
     
     def move(self, direction) -> None:
         match direction:
-            case "north":
-                self.location += [0][1]
             case "east":
-                self.location += [1][0]
+                if self.check_move(self.location_y, 1):
+                    self.location_y += 1
             case "south":
-                self.location -= [0][1]
+                if self.check_move(self.location_x, 1):
+                    self.location_x += 1
             case "west":
-                self.location -= [1][0]
+                if self.check_move(self.location_y, -1):
+                    self.location_y -= 1
+            case "north":
+                if self.check_move(self.location_x, -1):
+                    self.location_x -= 1
+            case _:
+                print("Invalid Movement")
+    
+    def check_move(self, direction, incrememnt) -> bool:
+        val = direction + incrememnt
+        rows = board_rooms.ROWS
+        cols = board_rooms.COLS
+        if val < 0 or val > rows or val < 0 or val > cols:
+            return False
+        return True
+
+    def get_location(self) -> list:
+        return[self.location_x, self.location_y]
             
 
 
@@ -52,10 +82,17 @@ class Player(Character):
         super().__init__(name)
 
 class Enemy(Character):
-    def __init__(self, name) -> None:
+    def __init__(self, name="Zombie") -> None:
         super().__init__(name)
         self.armor_class = random_stat()
         self.strength = random_stat()
+
+class Boss(Character):
+    def __init__(self, name="Yharl") -> None:
+        super().__init__(name)
+        self.health = 30
+        self.armor_class = 8
+        self.strength = 8
 
 # Generate random stat (not needed in class)
 def random_stat(MIN=1, MAX=10) -> int:

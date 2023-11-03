@@ -1,31 +1,55 @@
 import numpy as np
 import random, os
+from character import Character, CHAR_ICON, Enemy, Boss
+
+ROWS = 5
+COLS = 5
 
 class Room():
     def __init__(self) -> None:
-        self.room_icon = "[   ]"
-            
+        self.room_icon = "[ - ]"
+        self.description = self.create_description()
+        self.item = None
+        self.enemy = None
+        self.boss = None
+    
     def explore(self) -> None:
         self.room_icon = "[   ]"
+    
+    def create_description(self) -> str:
+        with open("room_descriptions.txt", "r") as f:
+            lines = f.readlines()
+        return random.choice(lines).replace("\n","")
+    
+    def enter(self) -> None:
+        self.room_icon = CHAR_ICON
 
 class EnemyRoom(Room):
     def __init__(self) -> None:
+        super().__init__()
         self.room_icon = "[ ! ]"
+        self.description = "There is an enemy in here!"
+        self.enemy = Enemy()
 
 class LootRoom(Room):
     def __init__(self) -> None:
+        super().__init__()
         self.room_icon = "[ + ]"
+        self.description = "Oh sick, loot!"
 
 class BossRoom(Room):
     def __init__(self) -> None:
+        super().__init__()
         self.room_icon = "[ X ]"
+        self.description = "Big monster..."
+        self.boss = Boss()
 
 class Board():
     def __init__(self) -> None:
         # Create a semi-random board
-        os.system('clear')
-        self.rows = 5
-        self.cols = 5
+        clear_screen()
+        self.rows = ROWS
+        self.cols = COLS
         self.boss_rooms = 1
         self.rooms = self.generate_rooms()
     
@@ -34,6 +58,9 @@ class Board():
         for x in range(self.rows):
             for y in range(self.cols):
                 rooms[x, y] = self.generate_special_type()
+        # Replace first room with empty room for player
+        rooms[0,0] = Room()
+        rooms[0,0].room_icon = CHAR_ICON
         # Replace one room at random with a boss room
         rng1 = random.randint(1,4)
         rng2 = random.randint(1,4)
@@ -52,12 +79,31 @@ class Board():
     def get_room(self, x, y) -> Room:
         return self.rooms[x,y]
     
+    def describe_room(self, x, y) -> str:
+        return self.rooms[x, y].description
+    
     def show_board(self) -> None:
         for row in self.rooms:
             for col in row:
                 if col is not None:
                     print(col.room_icon, end="  ")
             print("")
+    
+    def move_character(self, character: Character, direction: str) -> None:
+        character.move(direction)
+    
+    def check_combat(self, x, y) -> bool:
+        if self.rooms[x][y].enemy or self.rooms[x][y].boss:
+            return True
+        return False
+
+
+
+def clear_screen():
+    if os.name == "nt":
+        os.system('cls')
+    else:
+        os.system('clear')
 
 if __name__ == "__main__":
     print("Debug: Generate room\n")
