@@ -1,17 +1,18 @@
 import numpy as np
 import random, os
-from character import Character, CHAR_ICON, Enemy, Boss
+from character import Character, CHAR_ICON, Enemy, Boss, Player
 
 # Global variables for access by other classes
-ROWS = 5
-COLS = 5
+ROWS = 4
+COLS = 4
+BOSS = 1
 
 # Basic empty room class, to fill the board
 class Room():
     def __init__(self) -> None:
         self.room_icon = "[ - ]"
         self.description = self.create_description()
-        self.item = None
+        self.item = False
         self.enemy = None
         self.boss = None
     
@@ -31,7 +32,6 @@ class EnemyRoom(Room):
     def __init__(self) -> None:
         super().__init__()
         self.room_icon = "[ ! ]"
-        self.description = "There is an enemy in here!"
         self.enemy = Enemy()
 
 # Room subclass, contains loot
@@ -39,14 +39,15 @@ class LootRoom(Room):
     def __init__(self) -> None:
         super().__init__()
         self.room_icon = "[ + ]"
-        self.description = "Oh sick, loot!"
+        self.item = True
 
 # Room subclass, contains Yharl, the Boss
 class BossRoom(Room):
     def __init__(self) -> None:
         super().__init__()
         self.room_icon = "[ X ]"
-        self.description = "Big monster..."
+        self.description = "A large cavern holding Yharl"
+        self.enemy = Boss()
         self.boss = Boss()
 
 # Main board for game, created from rows and columns
@@ -70,8 +71,8 @@ class Board():
         rooms[0,0] = Room()
         rooms[0,0].room_icon = CHAR_ICON
         # Replace one room at random with a boss room
-        rng1 = random.randint(1,4)
-        rng2 = random.randint(1,4)
+        rng1 = random.randint(1,ROWS-1)
+        rng2 = random.randint(1,COLS-1)
         rooms[rng1, rng2] = BossRoom()
         return rooms
     
@@ -111,6 +112,14 @@ class Board():
         if self.rooms[x][y].enemy or self.rooms[x][y].boss:
             return True
         return False
+    
+    # Return item if item is in the room
+    def check_loot(self, x, y) -> dict:
+        if self.rooms[x][y].item:
+            item = self.rooms[x][y].item
+            self.rooms[x][y].item = None
+            return item
+        return None
 
     # Clear screen (OS checking)
     def clear_screen(self):
