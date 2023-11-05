@@ -3,8 +3,8 @@ import random, os
 from character import Character, CHAR_ICON, Enemy, Boss, Player
 
 # Global variables for access by other classes
-ROWS = 4
-COLS = 4
+ROWS = 8
+COLS = 8
 BOSS = 1
 
 # Basic empty room class, to fill the board
@@ -77,12 +77,12 @@ class Board():
         return rooms
     
     # Random chance for a special or normal room
-    # Roughly 60% for Normal rooms, 20% for Enemies, and 20% for loot
+    # Roughly 50% for Normal rooms, 30% for Enemies, and 20% for loot
     def generate_special_type(self) -> Room:
         rng = random.randint(0,9)
-        if rng < 5:
+        if rng < 4:
             return Room()
-        elif 5 <= rng <= 7:
+        elif 4 <= rng <= 7:
             return EnemyRoom()
         elif rng > 7:
             return LootRoom()

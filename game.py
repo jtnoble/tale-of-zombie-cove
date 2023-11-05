@@ -107,6 +107,7 @@ class Game():
                         break
                     case "describe":
                         print(self.board.rooms[location[0]][location[1]].description)
+                        self.enter_to_continue()
                         break
                     case "heal":
                         self.character.heal()
@@ -146,6 +147,7 @@ class Game():
     # End game, for when the player has exited the game loop from having 0 HP or for beating Yharl
     def end_game(self, win) -> None:
         if win:
+            self.clear_screen()
             print(f"After a long battle, {self.character.name} was triumphant.")
             time.sleep(1)
             print(f"Yharl has been taken down.")

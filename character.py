@@ -89,6 +89,7 @@ class Player(Character):
     def __init__(self, name) -> None:
         super().__init__(name)
         self.armor_class = random_stat(8,15)
+        self.strength = random_stat(4, 10)
         self.heals_left = 3
     
     # Print off stats (overload to include heals)
@@ -142,7 +143,7 @@ class Player(Character):
     def armor_increase(self) -> str:
         amt = random_stat(1,3)
         self.armor_class += amt
-        return f"Strength increased by {amt}"
+        return f"Armor Class increased by {amt}"
     
     # Use an item
     def use_item(self) -> bool:
@@ -180,14 +181,15 @@ class Player(Character):
 class Enemy(Character):
     def __init__(self, name="Zombie") -> None:
         super().__init__(name)
-        self.armor_class = random_stat(7,12)
+        self.armor_class = random_stat(7,10)
         self.strength = random_stat(1,5)
 
 # Character subclass: For boss enemy to have specific armor class, strength and health
 class Boss(Character):
     def __init__(self, name="Yharl") -> None:
         super().__init__(name)
-        self.health = 30
+        self.max_health = 30
+        self.health = self.max_health
         self.armor_class = 12
         self.strength = 8
 
