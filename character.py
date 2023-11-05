@@ -1,6 +1,8 @@
 import random, board_rooms
 
 CHAR_ICON = "[ P ]"
+
+# Information to store for character entities in the game
 class Character():
     def __init__(self, name) -> None:
         self.name = name
@@ -31,9 +33,11 @@ class Character():
         if self.stamina > self.max_stamina:
             self.stamina = self.max_stamina
 
+    # Random roll chance for attacking
     def roll(self) -> int:
         return random.randint(1, 20)
     
+    # Attacking, based on your roll versus an enemy's armor class
     def attack(self, target) -> str:
         d = self.roll()
         if d >= target.armor_class:
@@ -44,9 +48,11 @@ class Character():
         else:
             return f"{self.name} missed!"
 
+    # Taking damage by subtracting health
     def take_damage(self, amount) -> int:
         self.health -= amount
     
+    # Move character based on str input
     def move(self, direction) -> None:
         match direction:
             case "east":
@@ -64,6 +70,7 @@ class Character():
             case _:
                 print("Invalid Movement")
     
+    # Check if move is within the bounds of the board
     def check_move(self, direction, incrememnt) -> bool:
         val = direction + incrememnt
         rows = board_rooms.ROWS
@@ -72,21 +79,23 @@ class Character():
             return False
         return True
 
+    # Getter for character location
     def get_location(self) -> list:
         return[self.location_x, self.location_y]
             
-
-
+# Character subclass: For the player
 class Player(Character):
     def __init__(self, name) -> None:
         super().__init__(name)
 
+# Character subclass: For enemies to be given slightly modified stats
 class Enemy(Character):
     def __init__(self, name="Zombie") -> None:
         super().__init__(name)
         self.armor_class = random_stat()
         self.strength = random_stat()
 
+# Character subclass: For boss enemy to have specific armor class, strength and health
 class Boss(Character):
     def __init__(self, name="Yharl") -> None:
         super().__init__(name)
