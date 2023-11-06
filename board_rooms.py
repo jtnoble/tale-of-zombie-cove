@@ -129,7 +129,4 @@ class Board():
             os.system('clear')
 
 if __name__ == "__main__":
-    print("Debug: Generate room\n")
-    board = Board()
-    board.show_board()
-    room = board.get_room(2, 3)
+    print("Please run the `game.py` file instead of this file.")

@@ -35,14 +35,15 @@ class Game():
     # Main loop for movement and selection
     def game_loop(self) -> None:
         while self.character.health > 0:
+            location = self.character.get_location()
             self.clear_screen()
             self.character.show_stats()
             self.board.show_board()
-            self.character.inCombat = self.board.check_combat(self.character.location_x, self.character.location_y)
+            self.character.inCombat = self.board.check_combat(location[0], location[1])
             if self.character.inCombat:
-                self.attack_loop(self.board.rooms[self.character.location_x][self.character.location_y].enemy)
+                self.attack_loop(self.board.rooms[location[0]][location[1]].enemy)
                 continue
-            loot = self.board.check_loot(self.character.location_x, self.character.location_y)
+            loot = self.board.check_loot(location[0], location[1])
             if loot:
                 item = self.character.obtain_item()
                 print(f"You got a {item}")
@@ -68,8 +69,8 @@ class Game():
         print(f"{self.character.name} defeated {target.name}")
         if type(target) == character.Boss:
             self.end_game(True)
-        
-        self.board.rooms[self.character.location_x][self.character.location_y].enemy = None
+        location = self.character.get_location()
+        self.board.rooms[location[0]][location[1]].enemy = None
         self.character.inCombat = False
         time.sleep(1)
         # LEVEL UP
@@ -146,8 +147,8 @@ class Game():
         
     # End game, for when the player has exited the game loop from having 0 HP or for beating Yharl
     def end_game(self, win) -> None:
+        self.clear_screen()
         if win:
-            self.clear_screen()
             print(f"After a long battle, {self.character.name} was triumphant.")
             time.sleep(1)
             print(f"Yharl has been taken down.")

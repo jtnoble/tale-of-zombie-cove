@@ -1,6 +1,8 @@
 import random, board_rooms
 
 CHAR_ICON = "[ P ]"
+MAX_STR = 20
+MAX_AC = 18
 
 # Information to store for character entities in the game
 class Character():
@@ -34,7 +36,12 @@ class Character():
     def attack(self, target) -> str:
         d = self.roll()
         print(f"{self.name} rolled a {d}.")
-        if d >= target.armor_class:
+        if d == 20:
+            target.take_damage(self.strength * 2)
+            if target.health < 0:
+                self.inCombat = False
+            return f"CRITICAL: {self.name} hit {target.name} for {str(self.strength * 2)}"
+        elif d >= target.armor_class:
             target.take_damage(self.strength)
             if target.health < 0:
                 self.inCombat = False
@@ -88,7 +95,7 @@ class Character():
 class Player(Character):
     def __init__(self, name) -> None:
         super().__init__(name)
-        self.armor_class = random_stat(8,15)
+        self.armor_class = random_stat(8,13)
         self.strength = random_stat(4, 10)
         self.heals_left = 3
     
@@ -98,7 +105,10 @@ class Player(Character):
 
     # Add item to inventory
     def obtain_item(self) -> str:
-        item = random.choice(self.possible_items())
+        if self.strength >= MAX_STR and self.armor_class >= MAX_AC:
+            item = self.possible_items()[0]
+        else:
+            item = random.choice(self.possible_items())
         self.inventory.append(item)
         return list(item.keys())[0]
 
@@ -110,40 +120,58 @@ class Player(Character):
         return [h_potion, whetstone, armor]
     
     # increase health points
-    def heal(self, potion=False) -> str:
+    def heal(self, potion=False, amt=random.randint(3,6)) -> None:
         if potion:
             if self.health == self.max_health:
-                print("Oh no, you used a potion at full health")
-                print(self.possible_items()[0])
                 self.inventory.append(self.possible_items()[0])
-                return "Already at full health!"
-            amt = random_stat(3,6)
+                print("Already at full health!")
+                return None
             self.health += amt
             if self.health > self.max_health:
                 self.health = self.max_health
-            return "Healed for " + str(amt)
+            print("Healed for " + str(amt))
         elif self.heals_left > 0:
             if self.health == self.max_health:
-                return "Already at full health!"
+                print("Already at full health!")
+                input("[ENTER]")
+                return None
             self.health = self.max_health
             self.heals_left -= 1
-            return "Healed to full health"
+            print("Healed to full health")
+            input("[ENTER]")
         else:
-            return "No more heals left!"
-    def heal_potion(self) -> str:
-        return self.heal(True)
+            print("No more heals left!")
+            input("[ENTER]")
+    def heal_potion(self) -> None:
+        self.heal(True)
     
     # increase strength
-    def strength_levelup(self) -> str:
-        amt = random_stat(1,3)
+    def strength_levelup(self, amt=random.randint(1,3)) -> bool:
+        if self.strength >= MAX_STR:
+            print("Strength already at max!")
+            self.inventory.append(self.possible_items()[1])
+            return False
+        if self.strength + amt > MAX_STR:
+            self.strength = MAX_STR
+            print("Strength maxed out!")
+            return True
         self.strength += amt
-        return f"Strength increased by {amt}"
+        print(f"Strength increased by {amt}")
+        return True
+        
     
     # increase armor class
-    def armor_increase(self) -> str:
-        amt = random_stat(1,3)
+    def armor_increase(self, amt=random.randint(1,3)) -> bool:
+        if self.armor_class >= MAX_AC:
+            print("Armor Class already maxed out!")
+            self.inventory.append(self.possible_items()[2])
+            return False
+        if self.armor_class + amt > MAX_AC:
+            print("Armor Class maxed out!")
+            return True
         self.armor_class += amt
-        return f"Armor Class increased by {amt}"
+        print(f"Armor Class increased by {amt}")
+        return True
     
     # Use an item
     def use_item(self) -> bool:
@@ -155,8 +183,7 @@ class Player(Character):
             items_list = self.possible_items()
             for i in items_list:
                 if i.get(_input):
-                    msg = i.get(_input)()
-                    print(msg)
+                    i.get(_input)()
                     self.inventory.pop(self.inventory.index(i))
                     input("[ENTER]")
                     return True
@@ -168,11 +195,17 @@ class Player(Character):
     def level_up(self, stat) -> bool:
         match stat:
             case "strength":
-                self.strength += 1
+                if not self.strength_levelup(amt=1):
+                    return False
+                input("[ENTER]")
             case "health":
                 self.max_health += 1
+                print("Increased max health by 1.")
+                input("[ENTER]")
             case "armor":
-                self.armor_class += 1
+                if not self.armor_increase(amt=1):
+                    return False
+                input("[ENTER]")
             case _:
                 return False
         return True
@@ -181,18 +214,21 @@ class Player(Character):
 class Enemy(Character):
     def __init__(self, name="Zombie") -> None:
         super().__init__(name)
-        self.armor_class = random_stat(7,10)
+        self.armor_class = random_stat(3,12)
         self.strength = random_stat(1,5)
 
 # Character subclass: For boss enemy to have specific armor class, strength and health
 class Boss(Character):
     def __init__(self, name="Yharl") -> None:
         super().__init__(name)
-        self.max_health = 30
+        self.max_health = 50
         self.health = self.max_health
-        self.armor_class = 12
+        self.armor_class = 14
         self.strength = 8
 
 # Generate random stat (not needed in class)
 def random_stat(MIN=1, MAX=10) -> int:
         return random.randint(MIN, MAX)
+
+if __name__ == "__main__":
+    print("Please run the `game.py` file instead of this file.")

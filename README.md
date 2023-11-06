@@ -53,6 +53,7 @@ A basic Text-Based adventure written in the Command Line via Python.
 
 - Python3.10+ is REQUIRED for this application.
 - Install the appropriate requirements via the requirements.txt file if present.
+  - `pip install -r requirements.txt`
 
 ### Running
 
